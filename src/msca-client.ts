@@ -1,19 +1,14 @@
 import * as path from 'path';
 import * as process from 'process';
 import * as fs from 'fs';
-import * as yaml from 'js-yaml';
 import * as tl from 'azure-pipelines-task-lib/task';
 import { IExecOptions } from "azure-pipelines-task-lib/toolrunner";
 import { MscaInstaller } from './msca-installer'
-import * as gdnVariables from './msca-variables';
 
 export class MscaClient {
     cliVersion: string = '0.*';
 
     async setupEnvironment() {
-
-        // Setup Guardian Pipeline variables
-        this.setupTaskVariables(taskFolder);
 
         console.log('------------------------------------------------------------------------------');
 
@@ -67,72 +62,97 @@ export class MscaClient {
         }
     }
 
-    async init() {
-
+    getCliFilePath() : string {
         let cliFilePath: string = process.env.MSCA_FILEPATH;
         tl.debug(`cliFilePath = ${cliFilePath}`);
+        return cliFilePath;
+    }
 
+    async init() {
         try {
-            await exec.exec(cliFilePath, ['init', '--force']);
+            let cliFilePath = this.getCliFilePath();
+            let tool = tl.tool(cliFilePath).arg('init').arg('--force');
+            await tool.exec();
         }
         catch (error) {
-            tl.debug(error.Message);
+            tl.debug(error);
         }
     }
 
-    async run(inputArgs: string[]) {
+    async run(args: string[], successfulExitCodes: number[] = null) {
+        let tool = null;
+
         try {
-            const gdnTaskLibFolder = path.resolve(__dirname);
-            tl.debug(`gdnTaskLibFolder = ${__dirname}`);
+            if (successfulExitCodes == null) {
+                successfulExitCodes = [0];
+            }
 
-            const taskFolder = path.dirname(gdnTaskLibFolder);
-            tl.debug(`taskFolder = ${taskFolder}`);
-            
-            let gdnDirectory = path.join(process.env.AGENT_ROOTDIRECTORY, '_gdn');
-            tl.debug(`gdnDirectory = ${gdnDirectory}`);
-
-            await this.setupEnvironment(taskFolder);
+            await this.setupEnvironment();
             await this.init();
             
-            let cliFilePath: string = process.env.MSCA_FILEPATH;
-            tl.debug(`cliFilePath = ${cliFilePath}`);
+            let cliFilePath = this.getCliFilePath();
 
-            let args = ['run'];
+            tool = tl.tool(cliFilePath).arg('run');
 
-            if (inputArgs != null)
-            {
-                for (let i = 0; i < inputArgs.length; i++)
-                {
-                    args.push(inputArgs[i]);
+            if (args != null) {
+                for (let i = 0; i < args.length; i++) {
+                    tool.arg(args[i]);
                 }
             }
 
-            args.push('--not-break-on-detections');
+            tool.arg('--logger-pipeline');
 
-            if (tl.isDebug()) {
-                args.push('--logger-level');
-                args.push('trace');
+            let systemDebug = tl.getVariable("system.debug");
+            let loggerLevel = tl.getVariable("GDN_LOGGERLEVEL");
+            tl.debug(`GDN_LOGGERLEVEL = ${loggerLevel}`);
+
+            if (systemDebug == 'true') {
+                tool.arg('--logger-level').arg('trace');
+                tool.arg('--logger-show-level');
+            }
+            else if (loggerLevel) {
+                tool.arg('--logger-level').arg(loggerLevel);
             }
 
-            let sarifFile : string = path.join(process.env.GITHUB_WORKSPACE, '.gdn', 'msca.sarif');
+            let sarifFile : string = path.join(process.env.BUILD_STAGINGDIRECTORY, '.gdn', 'msca.sarif');
             tl.debug(`sarifFile = ${sarifFile}`);
 
             // Write it as a GitHub Action variable for follow up tasks to consume
-            tl.exportVariable('MSCA_SARIF_FILE', sarifFile);
-            tl.setOutput('sarifFile', sarifFile);
+            tl.setVariable('MSCA_SARIF_FILE', sarifFile);
 
             args.push('--export-breaking-results-to-file');
             args.push(`${sarifFile}`);
-
-            tl.debug('Running Microsoft Security Code Analysis...');
-
-            await exec.exec(cliFilePath, args);
- 
         } catch (error) {
-            error('Exception occurred while initializing guardian:');
+            error('Exception occurred while initializing MSCA:');
             error(error);
             tl.setResult(tl.TaskResult.Failed, error);
             return;
+        }
+
+        try {
+            // let us parse the exit code
+            let options: IExecOptions = <IExecOptions>{
+                ignoreReturnCode: true
+            };
+
+            tl.debug('Running Microsoft Security Code Analysis...');
+
+            let exitCode = await tool.exec(options);
+
+            let success = false;
+            for (let i = 0; i < successfulExitCodes.length; i++) {
+                if (exitCode == successfulExitCodes[i]) {
+                    success = true;
+                    break;
+                }
+            }
+
+            if (!success) {
+                throw `Guardian exited with an error exit code: ${exitCode}`;
+            }
+        } catch (error) {
+            error(error);
+            tl.setResult(tl.TaskResult.Failed, error);
         }
     }
 }
