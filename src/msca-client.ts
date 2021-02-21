@@ -35,32 +35,6 @@ export class MscaClient {
         return !value || !value.trim();
     }
 
-    setupTaskVariables(taskDirectory: string) {
-        // set up the input environment variables
-        process.env.GDN_AGENT_TASKDIRECTORY = taskDirectory;
-
-        const taskFilePath = `${taskDirectory}/task.json`;
-        tl.debug(`taskFilePath = ${taskFilePath}`);
-        
-        const taskFile = require(taskFilePath);
-
-        const taskName = taskFile.name.toUpperCase();
-        tl.debug(`taskName = ${taskName}`);
-
-        for (const taskInput of taskFile.inputs) {
-            const inputValue = tl.getInput(`${taskInput.name}`);
-            if (inputValue != null) {
-                const varName = `GDNP_${taskName}_${taskInput.name.toUpperCase()}`;
-                const varValue = process.env[varName];
-                if (varValue == null) {
-                    tl.debug(`Input : ${varName}`);
-                    process.env[varName] = inputValue;
-                } else {
-                    tl.debug(`Override : ${varName}`);
-                }
-            }
-        }
-    }
 
     getCliFilePath() : string {
         let cliFilePath: string = process.env.MSCA_FILEPATH;
