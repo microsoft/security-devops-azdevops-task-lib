@@ -9,6 +9,9 @@ export class MscaClient {
     cliVersion: string = '0.*';
 
     async setupEnvironment() {
+        
+        // prevent welcome message
+        process.env.DOTNET_NOLOGO = 'true';
 
         console.log('------------------------------------------------------------------------------');
 
