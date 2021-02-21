@@ -22,7 +22,7 @@
     </Target>
 
     <Target Name="Build" DependsOnTargets="Clean;NpmInstall">
-        <Message Text="Compiling msca-azdevops-toolkit." />
+        <Message Text="Compiling msca-azdevops-task-lib." />
         <Exec Command="tsc" WorkingDirectory="$(RepoDirectory)" />
 
         <Copy SourceFiles="$(SrcDirectory)/msca-task-lib.proj" DestinationFolder="$(LibDirectory)" />
