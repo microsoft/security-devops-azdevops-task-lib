@@ -122,7 +122,7 @@ export class MscaClient {
             }
 
             if (!success) {
-                throw `Guardian exited with an error exit code: ${exitCode}`;
+                throw `MSCA CLI exited with an error exit code: ${exitCode}`;
             }
         } catch (error) {
             error(error);
