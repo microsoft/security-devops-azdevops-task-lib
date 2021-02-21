@@ -1,9 +1,10 @@
 {
     "name": "msca-azdevops-task-lib",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Microsoft Security Code Analysis for Azure DevOps task library.",
     "author": "Microsoft Corporation",
     "license": "MIT",
+    "homepage": "https://github.com/microsoft/msca-azdevops-task-lib",
     "dependencies": {
         "azure-pipelines-task-lib": "3.1.0",
         "azure-pipelines-tool-lib": "1.0.1"
