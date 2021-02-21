@@ -27,7 +27,6 @@
 
         <Copy SourceFiles="$(SrcDirectory)/msca-task-lib.proj" DestinationFolder="$(LibDirectory)" />
         <Copy SourceFiles="$(RepoDirectory)/package.json" DestinationFolder="$(LibDirectory)" />
-        <Copy SourceFiles="$(RepoDirectory)/package-lock.json" DestinationFolder="$(LibDirectory)" />
     </Target>
 
 </Project>
