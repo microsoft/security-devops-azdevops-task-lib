@@ -1,10 +1,10 @@
-# Microsoft Security Code Analysis AzDevOps Task Library
+# Microsoft Security DevOps AzDevOps Task Library
 
-An Azure DevOps javascript library for running the [Microsoft Security Code Analysis CLI](https://aka.ms/msca-nuget).
+An Azure DevOps javascript library for running the [Microsoft Security DevOps CLI](https://aka.ms/msdo-nuget).
 
 ## Related
 
-* [MSCA Toolkit for GitHub Actions](https://github.com/microsoft/msca-actions-toolkit)
+* [Microsoft Security DevOps Toolkit for GitHub Actions](https://github.com/microsoft/security-devops-actions-toolkit)
 
 ## Contributing
 

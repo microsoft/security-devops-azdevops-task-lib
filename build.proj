@@ -22,10 +22,10 @@
     </Target>
 
     <Target Name="Build" DependsOnTargets="Clean;NpmInstall">
-        <Message Text="Compiling msca-azdevops-task-lib." />
-        <Exec Command="tsc" WorkingDirectory="$(RepoDirectory)" />
+        <Message Text="Compiling microsoft-security-devops-azdevops-task-lib." />
+        <Exec Command="npx tsc" WorkingDirectory="$(RepoDirectory)" />
 
-        <Copy SourceFiles="$(SrcDirectory)/msca-task-lib.proj" DestinationFolder="$(LibDirectory)" />
+        <Copy SourceFiles="$(SrcDirectory)/msdo-task-lib.proj" DestinationFolder="$(LibDirectory)" />
         <Copy SourceFiles="$(RepoDirectory)/package.json" DestinationFolder="$(LibDirectory)" />
     </Target>
 
