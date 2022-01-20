@@ -3,9 +3,9 @@ import * as process from 'process';
 import * as fs from 'fs';
 import * as tl from 'azure-pipelines-task-lib/task';
 import { IExecOptions } from "azure-pipelines-task-lib/toolrunner";
-import { MscaInstaller } from './msca-installer'
+import { MsdoInstaller } from './msdo-installer'
 
-export class MscaClient {
+export class MsdoClient {
     cliVersion: string = '0.*';
 
     async setupEnvironment() {
@@ -15,10 +15,10 @@ export class MscaClient {
 
         console.log('------------------------------------------------------------------------------');
 
-        if (!process.env.MSCA_FILEPATH) {
+        if (!process.env.MSDO_FILEPATH) {
             let cliVersion = this.resolveCliVersion();
-            let mscaInstaller = new MscaInstaller();
-            await mscaInstaller.install(cliVersion);
+            let msdoInstaller = new MsdoInstaller();
+            await msdoInstaller.install(cliVersion);
         }
 
         console.log('------------------------------------------------------------------------------');
@@ -27,8 +27,8 @@ export class MscaClient {
     resolveCliVersion() : string {
         let cliVersion = this.cliVersion;
 
-        if (process.env.MSCA_VERSION) {
-            cliVersion = process.env.MSCA_VERSION;
+        if (process.env.MSDO_VERSION) {
+            cliVersion = process.env.MSDO_VERSION;
         }
 
         return cliVersion;
@@ -40,7 +40,7 @@ export class MscaClient {
 
 
     getCliFilePath() : string {
-        let cliFilePath: string = process.env.MSCA_FILEPATH;
+        let cliFilePath: string = process.env.MSDO_FILEPATH;
         tl.debug(`cliFilePath = ${cliFilePath}`);
         return cliFilePath;
     }
@@ -91,16 +91,16 @@ export class MscaClient {
                 tool.arg('--logger-level').arg(loggerLevel);
             }
 
-            let sarifFile : string = path.join(process.env.BUILD_STAGINGDIRECTORY, '.gdn', 'msca.sarif');
+            let sarifFile : string = path.join(process.env.BUILD_STAGINGDIRECTORY, '.gdn', 'msdo.sarif');
             tl.debug(`sarifFile = ${sarifFile}`);
 
             // Write it as a GitHub Action variable for follow up tasks to consume
-            tl.setVariable('MSCA_SARIF_FILE', sarifFile);
+            tl.setVariable('MSDO_SARIF_FILE', sarifFile);
 
             args.push('--export-breaking-results-to-file');
             args.push(`${sarifFile}`);
         } catch (error) {
-            error('Exception occurred while initializing MSCA:');
+            error('Exception occurred while initializing MSDO:');
             error(error);
             tl.setResult(tl.TaskResult.Failed, error);
             return;
@@ -112,7 +112,7 @@ export class MscaClient {
                 ignoreReturnCode: true
             };
 
-            tl.debug('Running Microsoft Security Code Analysis...');
+            tl.debug('Running Microsoft Security DevOps...');
 
             let exitCode = await tool.exec(options);
 
@@ -125,7 +125,7 @@ export class MscaClient {
             }
 
             if (!success) {
-                throw `MSCA CLI exited with an error exit code: ${exitCode}`;
+                throw `MSDO CLI exited with an error exit code: ${exitCode}`;
             }
         } catch (error) {
             error(error);
