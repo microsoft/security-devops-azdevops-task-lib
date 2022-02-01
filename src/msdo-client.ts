@@ -99,6 +99,9 @@ export class MsdoClient {
 
             args.push('--export-breaking-results-to-file');
             args.push(`${sarifFile}`);
+
+            args.push('--environment-name');
+            args.push('azdevops');
         } catch (error) {
             error('Exception occurred while initializing MSDO:');
             error(error);
