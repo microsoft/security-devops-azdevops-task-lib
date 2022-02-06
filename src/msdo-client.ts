@@ -96,11 +96,11 @@ export class MsdoClient {
             // Write it as a GitHub Action variable for follow up tasks to consume
             tl.setVariable('MSDO_SARIF_FILE', sarifFile);
 
-            args.push('--export-breaking-results-to-file');
-            args.push(`${sarifFile}`);
+            tool.arg('--export-breaking-results-to-file');
+            tool.arg(sarifFile);
 
-            args.push('--environment-name');
-            args.push('azdevops');
+            tool.arg('--environment-name');
+            tool.arg('azdevops');
         } catch (error) {
             error('Exception occurred while initializing MSDO:');
             error(error);
