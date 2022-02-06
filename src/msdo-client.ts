@@ -99,7 +99,7 @@ export class MsdoClient {
             tool.arg('--export-breaking-results-to-file');
             tool.arg(sarifFile);
 
-            tool.arg('--environment-name');
+            tool.arg('--telemetry-environment');
             tool.arg('azdevops');
         } catch (error) {
             error('Exception occurred while initializing MSDO:');
