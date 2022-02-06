@@ -56,8 +56,10 @@ export class MsdoClient {
         }
     }
 
-    async run(args: string[], successfulExitCodes: number[] = null) {
+    async run(args: string[], successfulExitCodes: number[] = null, publish: boolean = true, publishArtifactName: string = null) {
         let tool = null;
+        let sarifFile : string = path.join(process.env.BUILD_STAGINGDIRECTORY, '.gdn', 'msdo.sarif');
+        tl.debug(`sarifFile = ${sarifFile}`);
 
         try {
             if (successfulExitCodes == null) {
@@ -91,9 +93,6 @@ export class MsdoClient {
                 tool.arg('--logger-level').arg(loggerLevel);
             }
 
-            let sarifFile : string = path.join(process.env.BUILD_STAGINGDIRECTORY, '.gdn', 'msdo.sarif');
-            tl.debug(`sarifFile = ${sarifFile}`);
-
             // Write it as a GitHub Action variable for follow up tasks to consume
             tl.setVariable('MSDO_SARIF_FILE', sarifFile);
 
@@ -125,6 +124,14 @@ export class MsdoClient {
                     success = true;
                     break;
                 }
+            }
+
+            if (publish && fs.existsSync(sarifFile)) {
+                if (this.isNullOrWhiteSpace(publishArtifactName)) {
+                    publishArtifactName = 'CodeAnalysisLogs';
+                }
+
+                console.log(`##vso[artifact.upload artifactname=${publishArtifactName}]${sarifFile}`);
             }
 
             if (!success) {
