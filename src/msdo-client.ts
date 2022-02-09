@@ -102,8 +102,7 @@ export class MsdoClient {
             tool.arg('--telemetry-environment');
             tool.arg('azdevops');
         } catch (error) {
-            error('Exception occurred while initializing MSDO:');
-            error(error);
+            console.error('Exception occurred while initializing MSDO:');
             tl.setResult(tl.TaskResult.Failed, error);
             return;
         }
@@ -138,7 +137,6 @@ export class MsdoClient {
                 throw `MSDO CLI exited with an error exit code: ${exitCode}`;
             }
         } catch (error) {
-            error(error);
             tl.setResult(tl.TaskResult.Failed, error);
         }
     }
