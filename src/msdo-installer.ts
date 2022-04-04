@@ -25,15 +25,23 @@ export class MsdoInstaller {
         }
 
         // initialize the _msdo directory
-        let msdoDirectory = path.join(process.env.AGENT_ROOTDIRECTORY, '_msdo');
-        tl.debug(`msdoDirectory = ${msdoDirectory}`);
-        this.ensureDirectory(msdoDirectory);
+        let agentDirectory = path.join(process.env.AGENT_ROOTDIRECTORY, '_msdo');
+        tl.debug(`agentDirectory = ${agentDirectory}`);
+        this.ensureDirectory(agentDirectory);
 
-        let msdoPackagesDirectory = path.join(msdoDirectory, 'versions');
-        tl.debug(`msdoPackagesDirectory = ${msdoPackagesDirectory}`);
-        this.ensureDirectory(msdoPackagesDirectory);
+        let agentPackagesDirectory = process.env.MSDO_PACKAGES_DIRECTORY;
+        if (!agentPackagesDirectory) {
+            agentPackagesDirectory = path.join(agentDirectory, 'packages');
+            tl.debug(`agentPackagesDirectory = ${agentPackagesDirectory}`);
+            this.ensureDirectory(agentPackagesDirectory);
+            process.env.MSDO_PACKAGES_DIRECTORY = agentPackagesDirectory;
+        }
 
-        let msdoVersionsDirectory = path.join(msdoPackagesDirectory, 'microsoft.security.devops.cli');
+        let agentVersionsDirectory = path.join(agentDirectory, 'versions');
+        tl.debug(`agentVersionsDirectory = ${agentVersionsDirectory}`);
+        this.ensureDirectory(agentVersionsDirectory);
+
+        let msdoVersionsDirectory = path.join(agentVersionsDirectory, 'microsoft.security.devops.cli');
         tl.debug(`msdoVersionsDirectory = ${msdoVersionsDirectory}`);
 
         if (this.isInstalled(msdoVersionsDirectory, cliVersion)) {
@@ -59,7 +67,7 @@ export class MsdoInstaller {
                     .arg(msdoProjectFile)
                     .arg(`/p:MsdoPackageVersion=${cliVersion}`)
                     .arg('--packages')
-                    .arg(msdoPackagesDirectory)
+                    .arg(agentVersionsDirectory)
                     .arg('--source')
                     .arg('https://api.nuget.org/v3/index.json');
 
