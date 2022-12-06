@@ -6,8 +6,8 @@
     "license": "MIT",
     "homepage": "https://github.com/microsoft/security-devops-azdevops-task-lib",
     "dependencies": {
-        "azure-pipelines-task-lib": "3.1.0",
-        "azure-pipelines-tool-lib": "1.0.1"
+        "azure-pipelines-task-lib": "4.1.0",
+        "azure-pipelines-tool-lib": "2.0.0-preview"
     },
     "devDependencies": {
         "typescript": "^4.1.5"
