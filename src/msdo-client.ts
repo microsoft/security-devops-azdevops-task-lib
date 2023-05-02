@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as tl from 'azure-pipelines-task-lib/task';
 import { IExecOptions } from "azure-pipelines-task-lib/toolrunner";
 import * as common from './msdo-common';
-import { MsdoInstaller } from './msdo-installer'
+import { MsdoInstaller } from './msdo-installer';
 
 export class MsdoClient {
     cliVersion: string = 'Latest';
