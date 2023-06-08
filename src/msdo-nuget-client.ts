@@ -7,6 +7,16 @@ import AdmZip = require('adm-zip');
 import * as common from './msdo-common';
 
 /**
+ * The default number of times to retry downloading a file.
+ */
+const _defaultFileDownloadRetries = 2;
+
+/**
+ * The default timeout in milliseconds between file download retries.
+ */
+const _defaultFileDownloadRetryTimeoutMs = 1000;
+
+/**
  * Information about an installed nuget package
  */
 export interface InstallNuGetPackageResponse {
@@ -564,44 +574,52 @@ async function requestJson(url: string, options: Object): Promise<Object> {
 async function downloadFile(
     url: string,
     options: Object,
-    destinationPath: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-        try {
-            const req = https.request(url, options, async (res) => {
-                if (res.statusCode === 303) {
-                    let redirectUrl = res.headers['location'];
-                    options['auth'] = null;
-                    await downloadFile(redirectUrl, options, destinationPath);
-                    resolve();
-                    return;
-                }
-                
-                if (res.statusCode !== 200) {
-                    reject(new Error(`Failed to download file: ${url}. Status code: ${res.statusCode}`));
-                    return;
-                }
+    destinationPath: string,
+    retries: number = _defaultFileDownloadRetries,
+    retryTimeout: number = _defaultFileDownloadRetryTimeoutMs): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+        let errors: Error[] = [];
+        do {
+            try {
+                const req = https.request(url, options, async (res) => {
+                    if (res.statusCode === 303) {
+                        let redirectUrl = res.headers['location'];
+                        options['auth'] = null;
+                        await downloadFile(redirectUrl, options, destinationPath);
+                        retries = 0;
+                        resolve();
+                        return;
+                    }
+                    
+                    if (res.statusCode !== 200) {
+                        throw new Error(`Failed to download file: ${url}. Status code: ${res.statusCode}`);
+                    }
 
-                const file = fs.createWriteStream(destinationPath);
-                res.pipe(file);
+                    const file = fs.createWriteStream(destinationPath);
+                    res.pipe(file);
 
-                file.on('finish', () => {
-                    file.close();
-                    resolve();
+                    file.on('finish', () => {
+                        file.close();
+                        retries = 0;
+                        resolve();
+                    });
                 });
-            });
 
-            req.on('error', (error) => {
-                reject(new Error(`Error downloading url: ${error}`));
-            });
-            
-            req.end();
-        } catch (error) {
-            if (error.Message.contains("Error dwonloading url")) {
-                reject(error);
-            } else {
-                reject(new Error(`Error downloading url: ${error}`));
-            }
-        }        
+                req.on('error', (error) => {
+                    throw error;
+                });
+                
+                req.end();
+            } catch (error) {
+                errors.push(error);
+                // Wait to try again
+                await common.sleep(retryTimeout);
+            }        
+        } while (retries-- > 0);
+        
+        if (retries == 0 && errors.length == retries + 1) {
+            reject(new Error(`Error downloading url: ${errors[0]}`));
+        }
     });
 }
 
