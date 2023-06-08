@@ -3,16 +3,14 @@ import * as process from 'process';
 import * as fs from 'fs';
 import * as tl from 'azure-pipelines-task-lib/task';
 import { IExecOptions } from "azure-pipelines-task-lib/toolrunner";
-import { MsdoInstaller } from './msdo-installer'
+import * as common from './msdo-common';
+import { MsdoInstaller } from './msdo-installer';
 
 export class MsdoClient {
-    cliVersion: string = '0.*';
+    cliVersion: string = 'Latest';
 
     async setupEnvironment() {
         
-        // prevent welcome message
-        process.env.DOTNET_NOLOGO = 'true';
-
         console.log('------------------------------------------------------------------------------');
 
         if (!process.env.MSDO_FILEPATH) {
@@ -35,11 +33,6 @@ export class MsdoClient {
 
         return cliVersion;
     }
-
-    isNullOrWhiteSpace(value: string) : boolean {
-        return !value || !value.trim();
-    }
-
 
     getCliFilePath() : string {
         let cliFilePath: string = process.env.MSDO_FILEPATH;
@@ -128,7 +121,7 @@ export class MsdoClient {
             }
 
             if (publish && fs.existsSync(sarifFile)) {
-                if (this.isNullOrWhiteSpace(publishArtifactName)) {
+                if (common.isNullOrWhiteSpace(publishArtifactName)) {
                     publishArtifactName = 'CodeAnalysisLogs';
                 }
 
