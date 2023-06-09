@@ -12,9 +12,9 @@ import * as common from './msdo-common';
 const _defaultFileDownloadRetries = 2;
 
 /**
- * The default timeout in milliseconds between file download retries.
+ * The default delay in milliseconds between file download retries.
  */
-const _defaultFileDownloadRetryTimeoutMs = 1000;
+const _defaultFileDownloadRetryDelayMs = 1000;
 
 /**
  * Information about an installed nuget package
@@ -576,50 +576,69 @@ async function downloadFile(
     options: Object,
     destinationPath: string,
     retries: number = _defaultFileDownloadRetries,
-    retryTimeout: number = _defaultFileDownloadRetryTimeoutMs): Promise<void> {
+    retryDelay: number = _defaultFileDownloadRetryDelayMs): Promise<void> {
     return new Promise(async (resolve, reject) => {
         let errors: Error[] = [];
         do {
             try {
-                const req = https.request(url, options, async (res) => {
-                    if (res.statusCode === 303) {
-                        let redirectUrl = res.headers['location'];
-                        options['auth'] = null;
-                        await downloadFile(redirectUrl, options, destinationPath);
-                        retries = 0;
-                        resolve();
-                        return;
-                    }
-                    
-                    if (res.statusCode !== 200) {
-                        throw new Error(`Failed to download file: ${url}. Status code: ${res.statusCode}`);
-                    }
-
-                    const file = fs.createWriteStream(destinationPath);
-                    res.pipe(file);
-
-                    file.on('finish', () => {
-                        file.close();
-                        retries = 0;
-                        resolve();
-                    });
-                });
-
-                req.on('error', (error) => {
-                    throw error;
-                });
-                
-                req.end();
+                await _downloadFile(url, options, destinationPath);
+                resolve();
+                return;
             } catch (error) {
                 errors.push(error);
-                // Wait to try again
-                await common.sleep(retryTimeout);
-            }        
+                if (retries > 0) {
+                    tl.debug(`Error downloading url: ${error.message}`);
+                    tl.debug(`Retrying download of url: ${url}`);
+                    await common.sleep(retryDelay);
+                }
+            }
         } while (retries-- > 0);
+
+        reject(new Error(`Error downloading url: ${errors[0] || url}`));
+    });
+}
+
+/**
+ * Downloads a file from a url.
+ * Will follow 303 redirects.
+ * 
+ * @param url - The url to download the file from
+ * @param options - The request options to use when calling the NuGet server, including authentication
+ * @param destinationPath - The path to download the file to
+ */
+async function _downloadFile(
+    url: string,
+    options: Object,
+    destinationPath: string): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+        const req = https.request(url, options, async (res) => {
+            if (res.statusCode === 303) {
+                let redirectUrl = res.headers['location'];
+                options['auth'] = null;
+                await downloadFile(redirectUrl, options, destinationPath);
+                resolve();
+                return;
+            }
+            
+            if (res.statusCode !== 200) {
+                reject(`Failed to download file: ${url}. Status code: ${res.statusCode}`);
+                return;
+            }
+
+            const file = fs.createWriteStream(destinationPath);
+            res.pipe(file);
+
+            file.on('finish', () => {
+                file.close();
+                resolve();
+            });
+        });
+
+        req.on('error', (error) => {
+            reject(error);
+        });
         
-        if (retries == 0 && errors.length == retries + 1) {
-            reject(new Error(`Error downloading url: ${errors[0]}`));
-        }
+        req.end();
     });
 }
 

@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## v1.7.0 - 06/08/2023
 
 ### Added
-- The `msdo-nuget.client.ts` javascript nuget client
+- The `msdo-nuget-client.ts` javascript nuget client
 
 ### Changed
 - Install the MSDO nuget package via javascript
