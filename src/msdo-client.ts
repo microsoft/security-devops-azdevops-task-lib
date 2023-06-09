@@ -32,6 +32,7 @@ async function setupEnvironment(): Promise<void> {
 
     console.log('------------------------------------------------------------------------------');
 }
+
 /**
  * Resolves the version of Guardian to install.
  * 
@@ -84,10 +85,10 @@ async function init() {
  * @param inputArgs - The CLI arguments to pass to "guardian run"
  * @param successfulExitCodes - The exit codes that are considered successful. Defaults to [0]. All others will throw an Error.
  */
-export async function run(args: string[], successfulExitCodes: number[] = null, publish: boolean = true, publishArtifactName: string = null): Promise<void> {
+export async function run(inputArgs: string[], successfulExitCodes: number[] = null, publish: boolean = true, publishArtifactName: string = null, telemetryEnvironment: string = 'azdevops'): Promise<void> {
     let tool = null;
 
-    let sarifFile : string = path.join(process.env.BUILD_STAGINGDIRECTORY, '.gdn', 'msdo.sarif');
+    let sarifFile: string = path.join(process.env.BUILD_STAGINGDIRECTORY, '.gdn', 'msdo.sarif');
     tl.debug(`sarifFile = ${sarifFile}`);
 
     try {
@@ -103,9 +104,9 @@ export async function run(args: string[], successfulExitCodes: number[] = null, 
 
         tool = tl.tool(cliFilePath).arg('run');
 
-        if (args != null) {
-            for (let i = 0; i < args.length; i++) {
-                tool.arg(args[i]);
+        if (inputArgs != null) {
+            for (let i = 0; i < inputArgs.length; i++) {
+                tool.arg(inputArgs[i]);
             }
         }
 
@@ -123,14 +124,14 @@ export async function run(args: string[], successfulExitCodes: number[] = null, 
             tool.arg('--logger-level').arg(loggerLevel);
         }
 
-        // Write it as a GitHub Action variable for follow up tasks to consume
+        // Write it as an environment variable for follow up tasks to consume
         tl.setVariable('MSDO_SARIF_FILE', sarifFile);
 
         tool.arg('--export-breaking-results-to-file');
         tool.arg(sarifFile);
 
         tool.arg('--telemetry-environment');
-        tool.arg('azdevops');
+        tool.arg(telemetryEnvironment);
     } catch (error) {
         console.error('Exception occurred while initializing MSDO:');
         tl.setResult(tl.TaskResult.Failed, error);

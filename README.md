@@ -2,7 +2,7 @@
 
 An Azure DevOps javascript library for running the [Microsoft Security DevOps CLI](https://aka.ms/msdo-nuget).
 
-## Leveraged By:
+## Leveraged By
 * Microsoft Security DevOps Azure DevOps Extension [code](https://github.com/microsoft/security-devops-azdevops) - [marketplace](https://marketplace.visualstudio.com/items?itemName=ms-securitydevops.microsoft-security-devops-azdevops)
 
 ## Related

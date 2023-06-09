@@ -121,7 +121,7 @@ function resolvePackageName(): string {
 /**
  * Checks if the Guardian CLI is already installed
  * 
- * @param gdnPackagesDirectory - The directory where the Guardian CLI packages are installed
+ * @param packagesDirectory - The directory where the Guardian CLI packages are installed
  * @param packageName - The name of the Guardian CLI package to install
  * @param cliVersion - The version of the Guardian CLI to install
  * @returns true if the Guardian CLI is already installed, false otherwise
@@ -149,7 +149,7 @@ function isInstalled(
 /**
  * Sets the GDN_DIRECTORY and GDN_FILEPATH environment variables
  * 
- * @param gdnPackagesDirectory - The directory where the Guardian CLI packages are installed
+ * @param packagesDirectory - The directory where the Guardian CLI packages are installed
  * @param packageName - The name of the Guardian CLI package to install
  * @param cliVersion - The version of the Guardian CLI to install
  */
