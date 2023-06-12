@@ -5,6 +5,7 @@ import * as process from 'process';
 import * as tl from 'azure-pipelines-task-lib/task';
 import AdmZip = require('adm-zip');
 import * as common from './msdo-common';
+const { decompressResponse } = require("decompress-response");
 
 /**
  * The default number of times to retry downloading a file.
@@ -531,6 +532,8 @@ async function requestJson(url: string, options: Object): Promise<Object> {
     return new Promise((resolve, reject) => {
         tl.debug(`${options['method'].toUpperCase()} ${url}`);
         const req = https.request(url, options, (res) => {
+            res = decompressResponse(res);
+            
             if (res.statusCode !== 200) {
                 reject(new Error(`Failed to call: ${url}. Status code: ${res.statusCode}`));
                 return;
