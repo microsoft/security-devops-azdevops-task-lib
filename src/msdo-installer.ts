@@ -48,10 +48,7 @@ export async function install(cliVersion: string): Promise<void> {
     tl.debug(`agentVersionsDirectory = ${agentVersionsDirectory}`);
     common.ensureDirectory(agentVersionsDirectory);
 
-    let msdoVersionsDirectory = path.join(agentVersionsDirectory, packageName);
-    tl.debug(`msdoVersionsDirectory = ${msdoVersionsDirectory}`);
-
-    if (isInstalled(msdoVersionsDirectory, packageName, cliVersion)) {
+    if (isInstalled(agentVersionsDirectory, packageName, cliVersion)) {
         return;
     }
 
@@ -70,7 +67,7 @@ export async function install(cliVersion: string): Promise<void> {
                 serviceIndexUrl,
                 packageName,
                 cliVersion,
-                msdoVersionsDirectory);
+                agentVersionsDirectory);
         } catch (error) {
             tl.debug(error);
             failed = true;
@@ -81,7 +78,7 @@ export async function install(cliVersion: string): Promise<void> {
         }
     } while (failed);
 
-    if (response.success) {
+    if (response && response.success) {
         if (response.inCache == true) {
             console.log(`${packageName} version ${response.resolvedVersion} already installed`);
         } else {
@@ -91,7 +88,7 @@ export async function install(cliVersion: string): Promise<void> {
         throw new Error('Failed to install the MSDO CLI nuget package.');
     }
 
-    setVariables(msdoVersionsDirectory, packageName, response.resolvedVersion, true);
+    setVariables(agentVersionsDirectory, packageName, response.resolvedVersion, true);
 }
 
 /**
