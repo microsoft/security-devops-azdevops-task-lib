@@ -3,10 +3,12 @@ All notable changes to this project will be documented in this file.1
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## v1.7.0 - 06/09/2023
+## v1.7.0 - 06/13/2023
 
 ### Added
 - The `msdo-nuget-client.ts` javascript nuget client
+- Dependency on adm-zip
+- Dependency on decompress-response
 
 ### Changed
 - Install the MSDO nuget package via javascript
