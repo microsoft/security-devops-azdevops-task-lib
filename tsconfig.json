@@ -13,7 +13,6 @@
     "noImplicitAny": false,
     "removeComments": true,
     "sourceMap": false
-
   },
   "include": [
     "src/**/*"
