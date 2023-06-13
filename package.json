@@ -1,16 +1,20 @@
 {
-    "name": "microsoft-security-devops-azdevops-task-lib",
-    "version": "1.4.0",
+    "name": "@microsoft/security-devops-azdevops-task-lib",
+    "version": "1.7.0",
     "description": "Microsoft Security DevOps for Azure DevOps task library.",
     "author": "Microsoft Corporation",
     "license": "MIT",
+    "repository": "https://github.com/microsoft/security-devops-azdevops-task-lib.git",
     "homepage": "https://github.com/microsoft/security-devops-azdevops-task-lib",
     "dependencies": {
-        "azure-pipelines-task-lib": "3.1.0",
-        "azure-pipelines-tool-lib": "1.0.1"
+        "adm-zip": "0.5.10",
+        "azure-pipelines-task-lib": "4.3.1",
+        "azure-pipelines-tool-lib": "2.0.4",
+        "decompress-response": "^8.1.0"
     },
     "devDependencies": {
-        "typescript": "^4.1.5"
+        "@types/node": "^20.3.1",
+        "typescript": "^5.1.3"
     },
     "main": "msdo-client.js"
 }
