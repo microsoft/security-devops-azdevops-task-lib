@@ -5,7 +5,10 @@ import * as process from 'process';
 import * as tl from 'azure-pipelines-task-lib/task';
 import AdmZip = require('adm-zip');
 import * as common from './msdo-common';
-const { decompressResponse } = require("decompress-response");
+import decompressResponse from 'decompress-response';
+// /* from decompress-response */
+// import { Transform as TransformStream, PassThrough as PassThroughStream } from 'stream';
+// import zlib from 'zlib';
 
 /**
  * The default number of times to retry downloading a file.
@@ -533,7 +536,7 @@ async function requestJson(url: string, options: Object): Promise<Object> {
         tl.debug(`${options['method'].toUpperCase()} ${url}`);
         const req = https.request(url, options, (res) => {
             res = decompressResponse(res);
-            
+
             if (res.statusCode !== 200) {
                 reject(new Error(`Failed to call: ${url}. Status code: ${res.statusCode}`));
                 return;
@@ -683,3 +686,143 @@ async function enableOnLinux(folderPath: string): Promise<void> {
         resolve();
     });
 }
+
+// function decompressResponse(response) {
+// 	const contentEncoding = (response.headers['content-encoding'] || '').toLowerCase();
+
+// 	if (!['gzip', 'deflate', 'br'].includes(contentEncoding)) {
+// 		return response;
+// 	}
+
+// 	delete response.headers['content-encoding'];
+
+// 	let isEmpty = true;
+
+// 	function handleContentEncoding(data) {
+// 		const decompressStream = contentEncoding === 'br'
+// 			? zlib.createBrotliDecompress()
+// 			: ((contentEncoding === 'deflate' && data.length > 0 && (data[0] & 0x08) === 0) // eslint-disable-line no-bitwise
+// 				? zlib.createInflateRaw()
+// 				: zlib.createUnzip());
+
+// 		decompressStream.once('error', error => {
+// 			if (isEmpty && !response.readable) {
+// 				finalStream.end();
+// 				return;
+// 			}
+
+// 			finalStream.destroy(error);
+// 		});
+
+// 		checker.pipe(decompressStream).pipe(finalStream);
+// 	}
+
+// 	const checker = new TransformStream({
+// 		transform(data, _encoding, callback) {
+// 			if (isEmpty === false) {
+// 				callback(null, data);
+// 				return;
+// 			}
+
+// 			isEmpty = false;
+
+// 			handleContentEncoding(data);
+
+// 			callback(null, data);
+// 		},
+
+// 		flush(callback) {
+// 			callback();
+// 		},
+// 	});
+
+// 	const finalStream = new PassThroughStream({
+// 		"autoDestroy": false,
+// 		destroy(error, callback) {
+// 			response.destroy();
+
+// 			callback(error);
+// 		},
+// 	});
+
+// 	mimicResponse(response, finalStream);
+// 	response.pipe(checker);
+
+// 	return finalStream;
+// }
+
+// // We define these manually to ensure they're always copied
+// // even if they would move up the prototype chain
+// // https://nodejs.org/api/http.html#http_class_http_incomingmessage
+// const knownProperties = [
+// 	'aborted',
+// 	'complete',
+// 	'headers',
+// 	'httpVersion',
+// 	'httpVersionMinor',
+// 	'httpVersionMajor',
+// 	'method',
+// 	'rawHeaders',
+// 	'rawTrailers',
+// 	'setTimeout',
+// 	'socket',
+// 	'statusCode',
+// 	'statusMessage',
+// 	'trailers',
+// 	'url',
+// ];
+
+// function mimicResponse(fromStream, toStream) {
+// 	if (toStream._readableState.autoDestroy) {
+// 		throw new Error('The second stream must have the `autoDestroy` option set to `false`');
+// 	}
+
+// 	const fromProperties = new Set([...Object.keys(fromStream), ...knownProperties]);
+
+// 	const properties = {};
+
+// 	for (const property of fromProperties) {
+// 		// Don't overwrite existing properties.
+// 		if (property in toStream) {
+// 			continue;
+// 		}
+
+// 		properties[property] = {
+// 			get() {
+// 				const value = fromStream[property];
+// 				const isFunction = typeof value === 'function';
+
+// 				return isFunction ? value.bind(fromStream) : value;
+// 			},
+// 			set(value) {
+// 				fromStream[property] = value;
+// 			},
+// 			enumerable: true,
+// 			configurable: false,
+// 		};
+// 	}
+
+// 	Object.defineProperties(toStream, properties);
+
+// 	fromStream.once('aborted', () => {
+// 		toStream.destroy();
+
+// 		toStream.emit('aborted');
+// 	});
+
+// 	fromStream.once('close', () => {
+// 		if (fromStream.complete) {
+// 			if (toStream.readable) {
+// 				toStream.once('end', () => {
+// 					toStream.emit('close');
+// 				});
+// 			} else {
+// 				toStream.emit('close');
+// 			}
+// 		} else {
+// 			toStream.emit('close');
+// 		}
+// 	});
+
+// 	return toStream;
+// }

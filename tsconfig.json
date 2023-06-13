@@ -8,7 +8,8 @@
     "outDir": "./lib",
     "rootDir": "./src",
     "strict": false,
-    "esModuleInterop": true,
+    "moduleResolution": "node",
+   // "esModuleInterop": true,
     "noImplicitAny": false,
     "removeComments": true,
     "sourceMap": false
