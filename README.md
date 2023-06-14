@@ -13,19 +13,27 @@ An Azure DevOps javascript library for running the [Microsoft Security DevOps CL
 
 ### Preqrequisities:
 
-* Install [dotnet](https://dotnet.microsoft.com/en-us/)
-* install [node.js](https://nodejs.org/en) (for npm)
+* Install [node.js](https://nodejs.org/en) (for npm)
+* Install [gulp-cli](https://www.npmjs.com/package/gulp-cli) globally:
+  ```
+  npm install -g gulp-cli
+  ```
+* Install node package dependencies
+  ```
+  npm install
+  ```
 
-To build, run:
-```powershell
-dotnet build ./build.proj [/p:NpmInstall=true|false]
+To build, simply run `gulp` in the root of the repo:
+```
+gulp
 ```
 
 The build:
-1. If `NpmInstall` is true, runs `npm install` at the root of the repo
+1. If `NPM_INSTALL` envvar is true, the build runs `npm install` at the root of the repo.
+   * Build dependencies are required to run the first build
 1. Compiles the typescript in the `./src` directory
-1. Outputs javascript to the `./lib` directory
-1. Copies the `./package.json` file to the `./lib` folder
+1. Outputs javascript to the `./dist` directory
+1. Copies the `./package.json` file to the `./dist` folder
 
 ## Publish
 
