@@ -6,6 +6,9 @@
     "license": "MIT",
     "repository": "https://github.com/microsoft/security-devops-azdevops-task-lib.git",
     "homepage": "https://github.com/microsoft/security-devops-azdevops-task-lib",
+    "scripts": {
+        "build": "gulp"
+    },
     "dependencies": {
         "adm-zip": "0.5.10",
         "azure-pipelines-task-lib": "4.3.1",
