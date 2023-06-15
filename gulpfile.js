@@ -10,13 +10,6 @@ function clean(cb) {
         .then(() => cb());
 }
 
-function install(cb) {
-    if (process.env.NPM_INSTALL) {
-        shell.task('npm install'); 
-    }
-    cb();
-}
-
 function compile(cb) {
     tsProject
         .src()
@@ -33,7 +26,6 @@ function copyPackageJson(cb) {
 }
 
 exports.clean = clean;
-exports.install = install;
 exports.compile = compile;
-exports.build = gulp.series(clean, install, compile, copyPackageJson);
+exports.build = gulp.series(clean, compile, copyPackageJson);
 exports.default = exports.build;

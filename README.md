@@ -29,8 +29,6 @@ gulp
 ```
 
 The build:
-1. If `NPM_INSTALL` envvar is true, the build runs `npm install` at the root of the repo.
-   * Build dependencies are required to run the first build
 1. Compiles the typescript in the `./src` directory
 1. Outputs javascript to the `./dist` directory
 1. Copies the `./package.json` file to the `./dist` folder
