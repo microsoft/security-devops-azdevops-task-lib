@@ -1,6 +1,6 @@
 {
     "name": "@microsoft/security-devops-azdevops-task-lib",
-    "version": "1.7.0",
+    "version": "1.7.2-beta.1",
     "description": "Microsoft Security DevOps for Azure DevOps task library.",
     "author": "Microsoft Corporation",
     "license": "MIT",
