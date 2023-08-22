@@ -5,6 +5,7 @@ import * as tl from 'azure-pipelines-task-lib/task';
 import { IExecOptions } from "azure-pipelines-task-lib/toolrunner";
 import * as common from './msdo-common';
 import * as installer from './msdo-installer';
+import AdmZip = require('adm-zip');
 
 /**
  * The default version of Guardian to install if no version is specified.
@@ -87,6 +88,7 @@ async function init() {
  */
 export async function run(inputArgs: string[], successfulExitCodes: number[] = null, publish: boolean = true, publishArtifactName: string = null, telemetryEnvironment: string = 'azdevops'): Promise<void> {
     let tool = null;
+    let debugDrop = process.env.GDN_DEBUG_DROP;
 
     let sarifFile: string = path.join(process.env.BUILD_STAGINGDIRECTORY, '.gdn', 'msdo.sarif');
     tl.debug(`sarifFile = ${sarifFile}`);
@@ -132,6 +134,18 @@ export async function run(inputArgs: string[], successfulExitCodes: number[] = n
 
         tool.arg('--telemetry-environment');
         tool.arg(telemetryEnvironment);
+
+        // Include the debug drop option on the command line if applicable.
+        tl.debug(`GdnDebugDrop = ${debugDrop}`);
+        if (debugDrop)
+        {
+            const dropPathValue = path.join(taskFolder, 'debug');
+            tool.arg('--debug-drop').arg('--debug-drop-path').arg(dropPathValue);
+            const dropPathName = `GDN_DEBUGDROPPATH`;
+
+            tl.debug(`Debug Drop enabled. ${dropPathName}: ${dropPathValue}`);
+            process.env[dropPathName] = dropPathValue;
+        }
     } catch (error) {
         console.error('Exception occurred while initializing MSDO:');
         tl.setResult(tl.TaskResult.Failed, error);
@@ -146,6 +160,11 @@ export async function run(inputArgs: string[], successfulExitCodes: number[] = n
 
         tl.debug('Running Microsoft Security DevOps...');
 
+        // Ensure debug folder starts clean
+        const taskFolder = path.dirname(path.dirname(path.resolve(__dirname)));
+        const debugFolder = path.join(taskFolder, 'debug');
+        cleanupDirectory(debugFolder);
+
         let exitCode = await tool.exec(options);
 
         let success = false;
@@ -153,6 +172,40 @@ export async function run(inputArgs: string[], successfulExitCodes: number[] = n
             if (exitCode == successfulExitCodes[i]) {
                 success = true;
                 break;
+            }
+        }
+
+        // Package up debug drop if applicable.
+        tl.debug(`GdnDebugDrop = ${debugDrop}`);
+        if (debugDrop)
+        {
+            if (fs.existsSync(debugFolder)) {
+                tl.debug("Creating debug drop archive...");
+                let zippedOutput = getZippedFolder(debugFolder);
+
+                const taskFilePath = path.join(process.env.GDN_AGENT_TASKDIRECTORY, `task.json`);
+                tl.debug(`taskFilePath = ${taskFilePath}`);
+                const taskFile = require(taskFilePath);
+                const taskName = taskFile.name.toUpperCase();
+
+                const instanceDirectory = getInstanceDirectory();
+                let debugStagingDir = path.join(instanceDirectory, '.gdn', 'debugdrop');
+                if (!fs.existsSync(debugStagingDir)) {
+                    tl.debug(`Creating missing folder: ${debugStagingDir}`)
+                    fs.mkdirSync(debugStagingDir)
+                }
+
+                let publishOutputLocation = path.join(debugStagingDir, `${taskName}_debug.zip`);
+                let dupeCount = 0;
+                while (fs.existsSync(publishOutputLocation)) {
+                    dupeCount += 1;
+                    publishOutputLocation = path.join(debugStagingDir, `${taskName}_${dupeCount}_debug.zip`)
+                }
+                fs.copyFileSync(zippedOutput, publishOutputLocation);
+                tl.debug(`Finished creating: ${publishOutputLocation}`);
+                tl.debug(`Cleaning up: ${path.join(taskFolder, 'debug')}`);
+                cleanupDirectory(path.join(taskFolder, 'debug'));
+                tl.debug(`Successfully cleaned up debug dump.`);
             }
         }
 
@@ -170,4 +223,78 @@ export async function run(inputArgs: string[], successfulExitCodes: number[] = n
     } catch (error) {
         tl.setResult(tl.TaskResult.Failed, error);
     }
+}
+
+function getInstanceDirectory(): string {
+    let hostType = process.env.SYSTEM_HOSTTYPE;
+    if (hostType) {
+        hostType = hostType.toUpperCase();
+    }
+
+    if (hostType == "RELEASE") {
+        return process.env.AGENT_RELEASEDIRECTORY;
+    } else { // hostType == "BUILD" or default
+        return process.env.AGENT_BUILDDIRECTORY;
+    }
+}
+
+function getZippedFolder(dir): string {
+    tl.debug(`Zipping up folder: ${dir}`)
+    let allPaths = getFilePathsRecursively(dir);
+    const zip = new AdmZip();
+    for (let filePath of allPaths) {
+        tl.debug(`Adding file to archive: ${filePath}`);
+        zip.addLocalFile(filePath);
+    }
+
+    let destPath = `${dir}.zip`;
+    tl.debug(`Writing to file: ${destPath}`)
+    zip.writeZip(destPath);
+    if (fs.existsSync(destPath)) {
+        tl.debug(`Successfully wrote file: ${destPath}`)
+    } else {
+        tl.debug(`Something went wrong! File does not exist: ${destPath}`)
+    }
+    return destPath;
+}
+
+// Returns a flat array of absolute paths to all files contained in the dir
+function getFilePathsRecursively(dir) {
+    tl.debug(`Searching for files under dir: ${dir}`)
+    var files = [];
+    let fileList = fs.readdirSync(dir);
+    var remaining = fileList.length;
+    if (!remaining) return files;
+
+    for (let file of fileList) {
+        file = path.resolve(dir, file);
+        let stat = fs.statSync(file);
+        if (stat && stat.isDirectory()) {
+            let f = getFilePathsRecursively(file);
+            files = files.concat(f);
+        } else {
+            files.push(file);
+        }
+        if (!--remaining) {
+            return files;
+        }
+    }
+}
+
+function cleanupDirectory(dir) {
+    if (!fs.existsSync(dir)) return;
+    
+    let items = fs.readdirSync(dir);
+
+    for (let item of items) {
+        item = path.resolve(dir, item)
+        let stat = fs.statSync(item);
+        if (stat && stat.isDirectory()) {
+            cleanupDirectory(item)
+        } else {
+            fs.unlinkSync(item);
+        }
+    }
+
+    fs.rmdirSync(dir);
 }
