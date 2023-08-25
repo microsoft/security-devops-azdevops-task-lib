@@ -98,6 +98,15 @@ export async function run(inputArgs: string[], successfulExitCodes: number[] = n
         if (successfulExitCodes == null) {
             successfulExitCodes = [0];
         }
+
+        const gdnTaskLibFolder = path.resolve(__dirname);
+        tl.debug(`gdnTaskLibFolder = ${gdnTaskLibFolder}`);
+
+        const nodeModulesFolder = path.dirname(gdnTaskLibFolder);
+        tl.debug(`nodeModulesFolder = ${nodeModulesFolder}`);
+
+        const taskFolder = path.dirname(nodeModulesFolder);
+        tl.debug(`taskFolder = ${taskFolder}`);
         
         await setupEnvironment();
         await init();
