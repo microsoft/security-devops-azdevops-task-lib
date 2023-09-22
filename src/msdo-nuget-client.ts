@@ -229,9 +229,7 @@ async function _resolveVersion(
     const findPreRelease = common.isLatestPreRelease(packageVersion);
 
     for (let packageGroup of result['items']) {
-        for (let itemIndex = packageGroup['items'].length; itemIndex >= 0; itemIndex--) {
-            let packageInfo = packageGroup['items'][itemIndex];
-
+        for (let packageInfo of packageGroup['items']) {
             let catalogEntry = packageInfo['catalogEntry'];
             if (catalogEntry['listed'] != true) {
                 // skip delisted packages
