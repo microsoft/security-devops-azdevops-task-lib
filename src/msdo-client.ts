@@ -134,8 +134,9 @@ export async function run(inputArgs: string[], successfulExitCodes: number[] = n
             // This still exists, but the behavior was corrected in 0.183.0
             // This defaults to only exporting breaking results, as the name implies
             tool.arg('--export-breaking-results-to-file');
-            tool.arg(sarifFile);
         }
+        
+        tool.arg(sarifFile);
 
         tool.arg('--telemetry-environment');
         tool.arg(telemetryEnvironment);
