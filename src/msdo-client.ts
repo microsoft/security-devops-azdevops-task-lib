@@ -127,7 +127,15 @@ export async function run(inputArgs: string[], successfulExitCodes: number[] = n
         // Write it as an environment variable for follow up tasks to consume
         tl.setVariable('MSDO_SARIF_FILE', sarifFile);
 
-        tool.arg('--export-breaking-results-to-file');
+        if (common.isVersionGreaterThanOrEqualTo(process.env.MSDO_INSTALLEDVERSION, '0.183.0')) {
+            // Export all SARIF results to a file
+            tool.arg('--export-file');
+        } else {
+            // This still exists, but the behavior was corrected in 0.183.0
+            // This defaults to only exporting breaking results, as the name implies
+            tool.arg('--export-breaking-results-to-file');
+        }
+        
         tool.arg(sarifFile);
 
         tool.arg('--telemetry-environment');
