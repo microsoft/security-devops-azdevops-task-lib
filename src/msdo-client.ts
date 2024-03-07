@@ -88,25 +88,28 @@ async function init() {
  */
 export async function run(inputArgs: string[], successfulExitCodes: number[] = null, publish: boolean = true, publishArtifactName: string = null, telemetryEnvironment: string = 'azdevops'): Promise<void> {
     let tool = null;
-    let debugDrop = process.env.GDN_DEBUG_DROP?.toLowerCase();
+    let debugDrop = common.parseBool(process.env.GDN_DEBUG_DROP);
 
     let sarifFile: string = path.join(process.env.BUILD_STAGINGDIRECTORY, '.gdn', 'msdo.sarif');
     tl.debug(`sarifFile = ${sarifFile}`);
+
+    const gdnTaskLibFolder = path.resolve(__dirname);
+    tl.debug(`gdnTaskLibFolder = ${gdnTaskLibFolder}`);
+
+    const nodeModulesFolder = path.dirname(path.dirname(gdnTaskLibFolder));
+    tl.debug(`nodeModulesFolder = ${nodeModulesFolder}`);
+
+    const taskFolder = path.dirname(nodeModulesFolder);
+    tl.debug(`taskFolder = ${taskFolder}`);
+
+    const debugFolder = path.join(taskFolder, 'debug');
+    tl.debug(`debugFolder = ${debugFolder}`);
 
     try {
         
         if (successfulExitCodes == null) {
             successfulExitCodes = [0];
         }
-
-        const gdnTaskLibFolder = path.resolve(__dirname);
-        tl.debug(`gdnTaskLibFolder = ${gdnTaskLibFolder}`);
-
-        const nodeModulesFolder = path.dirname(path.dirname(gdnTaskLibFolder));
-        tl.debug(`nodeModulesFolder = ${nodeModulesFolder}`);
-
-        const taskFolder = path.dirname(nodeModulesFolder);
-        tl.debug(`taskFolder = ${taskFolder}`);
         
         await setupEnvironment();
         await init();
@@ -154,7 +157,7 @@ export async function run(inputArgs: string[], successfulExitCodes: number[] = n
 
         // Include the debug drop option on the command line if applicable.
         tl.debug(`GdnDebugDrop = ${debugDrop}`);
-        if (debugDrop == 'true')
+        if (debugDrop)
         {
             const dropPathValue = path.join(taskFolder, 'debug');
             tool.arg('--debug-drop').arg('--debug-drop-path').arg(dropPathValue);
@@ -178,8 +181,6 @@ export async function run(inputArgs: string[], successfulExitCodes: number[] = n
         tl.debug('Running Microsoft Security DevOps...');
 
         // Ensure debug folder starts clean
-        const taskFolder = path.dirname(path.dirname(path.dirname(path.resolve(__dirname))));
-        const debugFolder = path.join(taskFolder, 'debug');
         cleanupDirectory(debugFolder);
 
         let exitCode = await tool.exec(options);
@@ -195,7 +196,7 @@ export async function run(inputArgs: string[], successfulExitCodes: number[] = n
         // Package up debug drop if applicable.
         let debugStagingDir = '';
         tl.debug(`GdnDebugDrop = ${debugDrop}`);
-        if (debugDrop == 'true') {
+        if (debugDrop) {
             if (fs.existsSync(debugFolder)) {
                 tl.debug("Creating debug drop archive...");
                 let zippedOutput = getZippedFolder(debugFolder);
