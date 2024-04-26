@@ -24,6 +24,19 @@ async function setupEnvironment(): Promise<void> {
     
     console.log('------------------------------------------------------------------------------');
 
+    // initialize the _msdo directory
+    let agentDirectory = path.join(process.env.AGENT_ROOTDIRECTORY, '_msdo');
+    tl.debug(`agentDirectory = ${agentDirectory}`);
+    common.ensureDirectory(agentDirectory);
+
+    let agentPackagesDirectory = process.env.MSDO_PACKAGES_DIRECTORY;
+    if (!agentPackagesDirectory) {
+        agentPackagesDirectory = path.join(agentDirectory, 'packages');
+        tl.debug(`agentPackagesDirectory = ${agentPackagesDirectory}`);
+        common.ensureDirectory(agentPackagesDirectory);
+        process.env.MSDO_PACKAGES_DIRECTORY = agentPackagesDirectory;
+    }
+
     if (!process.env.MSDO_FILEPATH) {
         let cliVersion = resolveCliVersion();
         await installer.install(cliVersion);
@@ -82,6 +95,23 @@ async function init() {
 }
 
 /**
+ * Runs "guardian update" to ensure the Guardian CLI is updated.
+ */
+async function update() {
+    console.log('Updating CLI...');
+    try {
+        let cliFilePath = getCliFilePath();
+        let tool = tl.tool(cliFilePath).arg('update');
+        await tool.exec();
+        console.log('Update complete.');
+    }
+    catch (error) {
+        console.log('Something went wrong while updating the CLI. Continuing...');
+        tl.debug(error);
+    }
+}
+
+/**
  * Runs "guardian run" with the input CLI arguments
  * @param inputArgs - The CLI arguments to pass to "guardian run"
  * @param successfulExitCodes - The exit codes that are considered successful. Defaults to [0]. All others will throw an Error.
@@ -89,6 +119,7 @@ async function init() {
 export async function run(inputArgs: string[], successfulExitCodes: number[] = null, publish: boolean = true, publishArtifactName: string = null, telemetryEnvironment: string = 'azdevops'): Promise<void> {
     let tool = null;
     let debugDrop = common.parseBool(process.env.GDN_DEBUG_DROP);
+    let prerel = common.parseBool(process.env.MSDO_PRERELEASE);
 
     let sarifFile: string = path.join(process.env.BUILD_STAGINGDIRECTORY, '.gdn', 'msdo.sarif');
     tl.debug(`sarifFile = ${sarifFile}`);
@@ -113,6 +144,10 @@ export async function run(inputArgs: string[], successfulExitCodes: number[] = n
         
         await setupEnvironment();
         await init();
+        if (prerel) {
+            await update();
+            await init();
+        }
         
         let cliFilePath = getCliFilePath();
 

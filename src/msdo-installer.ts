@@ -31,19 +31,7 @@ export async function install(cliVersion: string): Promise<void> {
 
     let packageName = resolvePackageName();
 
-    // initialize the _msdo directory
     let agentDirectory = path.join(process.env.AGENT_ROOTDIRECTORY, '_msdo');
-    tl.debug(`agentDirectory = ${agentDirectory}`);
-    common.ensureDirectory(agentDirectory);
-
-    let agentPackagesDirectory = process.env.MSDO_PACKAGES_DIRECTORY;
-    if (!agentPackagesDirectory) {
-        agentPackagesDirectory = path.join(agentDirectory, 'packages');
-        tl.debug(`agentPackagesDirectory = ${agentPackagesDirectory}`);
-        common.ensureDirectory(agentPackagesDirectory);
-        process.env.MSDO_PACKAGES_DIRECTORY = agentPackagesDirectory;
-    }
-
     let agentVersionsDirectory = path.join(agentDirectory, 'versions');
     tl.debug(`agentVersionsDirectory = ${agentVersionsDirectory}`);
     common.ensureDirectory(agentVersionsDirectory);
