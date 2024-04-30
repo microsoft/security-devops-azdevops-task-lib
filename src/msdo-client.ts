@@ -24,6 +24,19 @@ async function setupEnvironment(): Promise<void> {
     
     console.log('------------------------------------------------------------------------------');
 
+    // initialize the _msdo directory
+    let agentDirectory = path.join(process.env.AGENT_ROOTDIRECTORY, '_msdo');
+    tl.debug(`agentDirectory = ${agentDirectory}`);
+    common.ensureDirectory(agentDirectory);
+
+    let agentPackagesDirectory = process.env.MSDO_PACKAGES_DIRECTORY;
+    if (!agentPackagesDirectory) {
+        agentPackagesDirectory = path.join(agentDirectory, 'packages');
+        tl.debug(`agentPackagesDirectory = ${agentPackagesDirectory}`);
+        common.ensureDirectory(agentPackagesDirectory);
+        process.env.MSDO_PACKAGES_DIRECTORY = agentPackagesDirectory;
+    }
+
     if (!process.env.MSDO_FILEPATH) {
         let cliVersion = resolveCliVersion();
         await installer.install(cliVersion);
