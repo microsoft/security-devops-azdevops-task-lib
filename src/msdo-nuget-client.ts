@@ -1,4 +1,5 @@
 import * as https from 'https';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
@@ -592,12 +593,17 @@ async function callService(
  * @returns Https request options.
  */
 function resolveRequestOptions(accessToken: string): Object {
+    // Get proxy settings
+    const proxyConfig = tl.getHttpProxyConfiguration();
+    const proxyAgent = proxyConfig ? new HttpsProxyAgent(proxyConfig.proxyFormattedUrl) : null;
+
     let options = {
         method: 'GET',
         timeout: 2500,
         headers: {
             'Content-Type': 'application/json'
-        }
+        },
+        agent: proxyAgent
     };
 
     if (!common.isNullOrWhiteSpace(accessToken)) {
