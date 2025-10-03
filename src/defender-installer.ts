@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
+import * as http from 'http';
 import * as https from 'https';
 import * as tl from 'azure-pipelines-task-lib/task';
 import * as common from './msdo-common';
@@ -112,7 +113,7 @@ async function downloadDefenderCli(packagesDirectory: string, fileName: string, 
  * Handles the download response stream
  */
 function handleDownloadResponse(
-    response: any, 
+    response: http.IncomingMessage, 
     targetFilePath: string, 
     resolve: () => void, 
     reject: (error: Error) => void
