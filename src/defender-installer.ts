@@ -15,12 +15,12 @@ export async function install(cliVersion: string): Promise<void> {
     console.log(`Received cliVersion parameter: '${cliVersion}'`);
 
     if (process.env.DEFENDER_FILEPATH) {
-        console.log(`Defender CLI File Path overriden by %DEFENDER_FILEPATH%: ${process.env.DEFENDER_FILEPATH}`);
+        console.log(`Defender CLI File Path overridden by %DEFENDER_FILEPATH%: ${process.env.DEFENDER_FILEPATH}`);
         return;
     }
 
     if (process.env.DEFENDER_DIRECTORY) {
-        console.log(`Defender CLI Directory overriden by %DEFENDER_DIRECTORY%: ${process.env.DEFENDER_DIRECTORY}`);
+        console.log(`Defender CLI Directory overridden by %DEFENDER_DIRECTORY%: ${process.env.DEFENDER_DIRECTORY}`);
 
         // Set the defender file path with correct filename
         let fileName = resolveFileName();
