@@ -198,7 +198,7 @@ async function runDefenderCli(inputArgs: string[], successfulExitCodes: number[]
         }
 
         if (!success) {
-            throw `Defender CLI exited with an error exit code: ${exitCode}`;
+            throw new Error(`Defender CLI exited with an error exit code: ${exitCode}`);
         }
     } catch (error) {
         tl.setResult(tl.TaskResult.Failed, error);
