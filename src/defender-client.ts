@@ -84,13 +84,15 @@ function getCliFilePath() : string {
  * @param policy - The policy to use for scanning (default: "mdc")
  * @param outputPath - The output SARIF file path
  * @param successfulExitCodes - The exit codes that are considered successful. Defaults to [0]. All others will throw an Error.
+ * @param additionalArgs - Optional additional CLI arguments to append to the command
  */
 async function scan(
     scanType: string,
     target: string,
     policy: string = 'mdc',
     outputPath?: string,
-    successfulExitCodes: number[] = null
+    successfulExitCodes: number[] = null,
+    additionalArgs: string[] = []
 ): Promise<void> {
     
     if (!outputPath) {
@@ -105,6 +107,12 @@ async function scan(
         '--defender-output', outputPath
     ];
 
+    // Append additional arguments if provided
+    if (additionalArgs && additionalArgs.length > 0) {
+        args = args.concat(additionalArgs);
+        tl.debug(`Appending additional arguments: ${additionalArgs.join(' ')}`);
+    }
+
     await runDefenderCli(args, successfulExitCodes);
 }
 
@@ -114,14 +122,16 @@ async function scan(
  * @param policy - The policy to use for scanning (default: "mdc")
  * @param outputPath - The output SARIF file path
  * @param successfulExitCodes - The exit codes that are considered successful. Defaults to [0]. All others will throw an Error.
+ * @param additionalArgs - Optional additional CLI arguments to append to the command
  */
 export async function scanDirectory(
     directoryPath: string, 
     policy: string = 'mdc',
     outputPath?: string,
-    successfulExitCodes: number[] = null
+    successfulExitCodes: number[] = null,
+    additionalArgs: string[] = []
 ): Promise<void> {
-    await scan('fs', directoryPath, policy, outputPath, successfulExitCodes);
+    await scan('fs', directoryPath, policy, outputPath, successfulExitCodes, additionalArgs);
 }
 
 /**
@@ -130,14 +140,16 @@ export async function scanDirectory(
  * @param policy - The policy to use for scanning (default: "mdc")
  * @param outputPath - The output SARIF file path
  * @param successfulExitCodes - The exit codes that are considered successful. Defaults to [0]. All others will throw an Error.
+ * @param additionalArgs - Optional additional CLI arguments to append to the command
  */
 export async function scanImage(
     imageName: string, 
     policy: string = 'mdc',
     outputPath?: string,
-    successfulExitCodes: number[] = null
+    successfulExitCodes: number[] = null,
+    additionalArgs: string[] = []
 ): Promise<void> {
-    await scan('image', imageName, policy, outputPath, successfulExitCodes);
+    await scan('image', imageName, policy, outputPath, successfulExitCodes, additionalArgs);
 }
 
 /**
@@ -170,7 +182,7 @@ async function runDefenderCli(inputArgs: string[], successfulExitCodes: number[]
 
         if (systemDebug == 'true') {
             // Add verbose logging if system debug is enabled
-            tool.arg('--verbose');
+            tool.arg('--defender-debug');
         }
 
     } catch (error) {
@@ -204,5 +216,3 @@ async function runDefenderCli(inputArgs: string[], successfulExitCodes: number[]
         tl.setResult(tl.TaskResult.Failed, error);
     }
 }
-
-// Authentication is handled automatically by the scan commands, so no separate auth function is needed
