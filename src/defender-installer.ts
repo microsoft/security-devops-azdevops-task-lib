@@ -159,7 +159,7 @@ function handleDownloadResponse(
  * @returns The complete download URL
  */
 function getDownloadUrl(fileName: string, cliVersion: string): string {
-    const baseUrl = 'https://cli.dfd.security.azure.com/public';
+    const baseUrl = 'https://cli.dfd.security.azure.com/public/v2';
     console.log(`getDownloadUrl called with fileName: '${fileName}', cliVersion: '${cliVersion}'`);
     
     // Convert 'Latest' to 'latest' for URL compatibility
