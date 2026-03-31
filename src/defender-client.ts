@@ -103,8 +103,8 @@ async function scan(
         'scan',
         scanType,
         target,
-        '--defender-policy', policy,
-        '--defender-output', outputPath
+        '--policy', policy,
+        '--output', outputPath
     ];
 
     // Append additional arguments if provided
