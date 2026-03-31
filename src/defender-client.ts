@@ -103,8 +103,8 @@ async function scan(
         'scan',
         scanType,
         target,
-        '--defender-policy', policy,
-        '--defender-output', outputPath
+        '--policy', policy,
+        '--output', outputPath
     ];
 
     // Append additional arguments if provided
@@ -176,13 +176,6 @@ async function runDefenderCli(inputArgs: string[], successfulExitCodes: number[]
             for (let i = 0; i < inputArgs.length; i++) {
                 tool.arg(inputArgs[i]);
             }
-        }
-
-        let systemDebug = tl.getVariable("system.debug");
-
-        if (systemDebug == 'true') {
-            // Add verbose logging if system debug is enabled
-            tool.arg('--defender-debug');
         }
 
     } catch (error) {
