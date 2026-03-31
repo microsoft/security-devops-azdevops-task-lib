@@ -178,13 +178,6 @@ async function runDefenderCli(inputArgs: string[], successfulExitCodes: number[]
             }
         }
 
-        let systemDebug = tl.getVariable("system.debug");
-
-        if (systemDebug == 'true') {
-            // Add verbose logging if system debug is enabled
-            tool.arg('--defender-debug');
-        }
-
     } catch (error) {
         console.error('Exception occurred while initializing Defender CLI:');
         tl.setResult(tl.TaskResult.Failed, error);
